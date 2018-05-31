@@ -345,7 +345,22 @@ public class PushNotifications extends CordovaPlugin
 			return false;
 		}
 
-		Map<String, Object> tags = JsonUtils.jsonToMap(params);
+		@SuppressWarnings("unchecked")
+		Iterator<String> nameItr = params.keys();
+		Map<String, Object> paramsMap = new HashMap<String, Object>();
+		while (nameItr.hasNext())
+		{
+			try
+			{
+				String name = nameItr.next();
+				paramsMap.put(name, params.get(name));
+			}
+			catch (JSONException e)
+			{
+				PWLog.error(TAG, "Tag parameter is invalid", e);
+				return false;
+			}
+		}
 
 		callbackIds.put("setTags", callbackContext);
 
@@ -379,7 +394,7 @@ public class PushNotifications extends CordovaPlugin
 			}
 		}
 
-		PushManager.sendTags(cordova.getActivity(), tags, new SendTagsListenerImpl());
+		PushManager.sendTags(cordova.getActivity(), paramsMap, new SendTagsListenerImpl());
 		return true;
 	}
 
@@ -886,7 +901,7 @@ public class PushNotifications extends CordovaPlugin
 		String result = unifiedNotification.toString();
 
 		// wrap special characters
-		result = result.replace("%", "%\"+\"");
+		result.replace("%", "%\"+\"");
 
 		return result;
 	}
